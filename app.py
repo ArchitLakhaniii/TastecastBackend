@@ -3,6 +3,7 @@ Flask backend server for Tastecast application.
 Connects the frontend with the prediction algorithms.
 """
 import os
+import sys
 import json
 import pandas as pd
 import traceback
@@ -11,10 +12,27 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
-# Import our prediction modules
-from predcode import main as run_prediction, fit_model, forecast_next_days_window, per_ingredient_weekly_advisories_and_balance, upgrade_to_per_ingredient_restock_flags
-from suggestions import make_weekly_advisories, suggest_menu_items
-from run_all import main as run_full_pipeline
+# Add current directory to Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Import our prediction modules with error handling
+try:
+    from predcode import main as run_prediction, fit_model, forecast_next_days_window, per_ingredient_weekly_advisories_and_balance, upgrade_to_per_ingredient_restock_flags
+    from suggestions import make_weekly_advisories, suggest_menu_items
+    from run_all import main as run_full_pipeline
+    IMPORTS_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Some ML modules failed to import: {e}")
+    IMPORTS_AVAILABLE = False
+    
+    # Create fallback functions
+    def run_full_pipeline(*args, **kwargs):
+        """Fallback pipeline function"""
+        return {"status": "error", "message": "ML pipeline not available"}
+    
+    def run_prediction(*args, **kwargs):
+        """Fallback prediction function"""
+        return {"status": "error", "message": "Prediction not available"}
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -154,20 +172,59 @@ def ingest_csv():
                 
                 # Run the prediction pipeline
                 try:
-                    run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
-                    
-                    return jsonify({
-                        'message': 'CSV uploaded and processed successfully',
-                        'filename': filename,
-                        'rows': len(df)
-                    }), 200
+                    if IMPORTS_AVAILABLE:
+                        result = run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
+                        
+                        if result and result.get("status") == "success":
+                            return jsonify({
+                                'message': 'CSV uploaded and processed successfully',
+                                'filename': filename,
+                                'rows': len(df),
+                                'pipeline_result': result
+                            }), 200
+                        elif result and result.get("status") == "fallback":
+                            return jsonify({
+                                'message': 'CSV uploaded and processed with fallback pipeline',
+                                'filename': filename,
+                                'rows': len(df),
+                                'pipeline_result': result,
+                                'warning': 'Using simplified processing due to missing dependencies'
+                            }), 200
+                        else:
+                            return jsonify({
+                                'message': 'CSV uploaded but pipeline returned unexpected result',
+                                'filename': filename,
+                                'rows': len(df),
+                                'result': result
+                            }), 200
+                    else:
+                        # Create basic artifacts manually when imports are not available
+                        os.makedirs("artifacts", exist_ok=True)
+                        
+                        # Simple fallback: create basic advisories
+                        simple_advisories = pd.DataFrame({
+                            'date': [datetime.now().strftime('%Y-%m-%d')],
+                            'type': ['info'],
+                            'message': ['CSV uploaded successfully - using basic processing'],
+                            'ingredient': ['general']
+                        })
+                        simple_advisories.to_csv('artifacts/advisories.csv', index=False)
+                        
+                        return jsonify({
+                            'message': 'CSV uploaded - using basic processing',
+                            'filename': filename,
+                            'rows': len(df),
+                            'warning': 'Advanced ML features not available'
+                        }), 200
                     
                 except Exception as pred_error:
                     print(f"Prediction error: {pred_error}")
                     print(traceback.format_exc())
                     return jsonify({
                         'message': 'CSV uploaded but prediction failed',
-                        'error': str(pred_error)
+                        'error': str(pred_error),
+                        'filename': filename,
+                        'rows': len(df)
                     }), 200  # Still return 200 since upload succeeded
                 
             except Exception as csv_error:
@@ -217,23 +274,63 @@ def process_csv():
             
             # Run the prediction pipeline
             try:
-                run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
-                
-                # Read generated advisories
-                advisories_path = 'artifacts/advisories.csv'
-                if os.path.exists(advisories_path):
-                    advisories_df = pd.read_csv(advisories_path)
-                    advisories = advisories_df.to_dict('records')
+                if IMPORTS_AVAILABLE:
+                    result = run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
+                    
+                    # Read generated advisories
+                    advisories_path = 'artifacts/advisories.csv'
+                    if os.path.exists(advisories_path):
+                        advisories_df = pd.read_csv(advisories_path)
+                        advisories = advisories_df.to_dict('records')
+                    else:
+                        advisories = []
+                    
+                    if result and result.get("status") == "success":
+                        return jsonify({
+                            'success': True,
+                            'message': f'CSV {filename} processed successfully with ML pipeline',
+                            'advisories': advisories,
+                            'total_advisories': len(advisories),
+                            'processed_rows': len(df),
+                            'pipeline_result': result
+                        }), 200
+                    elif result and result.get("status") == "fallback":
+                        return jsonify({
+                            'success': True,
+                            'message': f'CSV {filename} processed with fallback pipeline',
+                            'advisories': advisories,
+                            'total_advisories': len(advisories),
+                            'processed_rows': len(df),
+                            'warning': 'Using simplified processing'
+                        }), 200
+                    else:
+                        return jsonify({
+                            'success': False,
+                            'message': 'CSV uploaded but ML pipeline returned unexpected result',
+                            'advisories': advisories,
+                            'result': result
+                        }), 500
                 else:
-                    advisories = []
-                
-                return jsonify({
-                    'success': True,
-                    'message': f'CSV {filename} processed successfully with ML pipeline',
-                    'advisories': advisories,
-                    'total_advisories': len(advisories),
-                    'processed_rows': len(df)
-                }), 200
+                    # Create basic fallback response
+                    os.makedirs("artifacts", exist_ok=True)
+                    simple_advisories = [{
+                        'date': datetime.now().strftime('%Y-%m-%d'),
+                        'type': 'info',
+                        'message': f'Processed {len(df)} rows successfully',
+                        'ingredient': 'general'
+                    }]
+                    
+                    # Save to file
+                    pd.DataFrame(simple_advisories).to_csv('artifacts/advisories.csv', index=False)
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': f'CSV {filename} processed with basic pipeline',
+                        'advisories': simple_advisories,
+                        'total_advisories': len(simple_advisories),
+                        'processed_rows': len(df),
+                        'warning': 'Advanced ML features not available'
+                    }), 200
                 
             except Exception as pred_error:
                 print(f"Prediction error: {pred_error}")
