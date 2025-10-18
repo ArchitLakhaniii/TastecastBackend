@@ -435,14 +435,27 @@ def get_advisories():
         daily_plan, advisories = read_latest_artifacts()
         
         if advisories is not None and len(advisories) > 0:
+            # Check if this is default demo data or user-generated data
+            # We can detect this by checking if dates are in 2026 (demo data) vs current dates (user data)
+            is_demo_data = False
+            if len(advisories) > 0:
+                first_date = str(advisories.iloc[0].get('date', ''))
+                is_demo_data = first_date.startswith('2026')  # Demo data uses 2026 dates
+            
             # Convert advisories to proper format
             advisories_list = []
             for _, row in advisories.iterrows():
                 # Parse the advisory data more intelligently
+                message = row.get('message', '')
+                
+                # Only add "Default output:" prefix if it's actually demo data
+                if is_demo_data:
+                    message = f"Default output: {message}" if message else "Default output"
+                
                 advisory_data = {
                     'date': row.get('date', ''),
                     'type': row.get('type', ''),
-                    'message': f"Default output: {row.get('message', '')}" if row.get('message', '') else "Default output",
+                    'message': message,
                     'ingredient': row.get('ingredient', '') if 'ingredient' in row else None
                 }
                 
