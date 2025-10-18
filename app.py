@@ -442,7 +442,7 @@ def get_advisories():
                 advisory_data = {
                     'date': row.get('date', ''),
                     'type': row.get('type', ''),
-                    'message': row.get('message', ''),
+                    'message': f"Default output: {row.get('message', '')}" if row.get('message', '') else "Default output",
                     'ingredient': row.get('ingredient', '') if 'ingredient' in row else None
                 }
                 
