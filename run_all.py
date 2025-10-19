@@ -8,6 +8,7 @@ import sys
 import argparse
 import pandas as pd
 import yaml
+import traceback
 from typing import Dict, Any
 
 # Add current directory to Python path to ensure imports work
@@ -56,11 +57,16 @@ FORECAST_AHEAD_DAYS = 365  # if None, use config.yaml forecast.forecast_horizon_
 def main(data_csv: str = "tastecast_one_item_2023_2025.csv", days_ahead: int | None = None):
     """Main pipeline function with error handling"""
     try:
+        print(f"DEBUG: Starting main pipeline with data_csv={data_csv}, days_ahead={days_ahead}")
         cfg = load_config("config.yaml")
+        print(f"DEBUG: Config loaded: {cfg}")
+        
         df = pd.read_csv(data_csv, parse_dates=["date"]) if data_csv else pd.read_csv(cfg.get("data_csv"))
+        print(f"DEBUG: CSV loaded with {len(df)} rows, date range: {df['date'].min()} to {df['date'].max()}")
         
         # Try to run the full pipeline
         try:
+            print("DEBUG: Attempting full ML pipeline...")
             df = upgrade_to_per_ingredient_restock_flags(df)
             feats = add_base_features(df).dropna()
             X = feats[["dow","month","is_weekend","is_xmas","is_july4","is_piday","is_thanksgiving","lag_1","lag_7","roll7","roll28"]]
@@ -70,7 +76,10 @@ def main(data_csv: str = "tastecast_one_item_2023_2025.csv", days_ahead: int | N
 
             # determine horizon: CLI arg -> module var -> config
             horizon = days_ahead if days_ahead is not None else (FORECAST_AHEAD_DAYS if FORECAST_AHEAD_DAYS is not None else cfg["forecast"]["forecast_horizon_days"])
+            print(f"DEBUG: Forecast horizon: {horizon} days")
+            
             future = forecast_next_days_window(df, model, days_ahead=horizon, start_year=cfg["forecast"]["forecast_year"])
+            print(f"DEBUG: Future forecast generated for {len(future)} days")
             
             # base plan
             future["qty_total"] = future["qty_sold"]
@@ -87,16 +96,19 @@ def main(data_csv: str = "tastecast_one_item_2023_2025.csv", days_ahead: int | N
             os.makedirs("artifacts", exist_ok=True)
             plan_path = export_plan(plan_df, "artifacts/daily_plan.csv")
             adv_path = export_advisories(adv_df, "artifacts/advisories.csv")
+            print(f"DEBUG: SUCCESS - Exported artifacts: {plan_path}, {adv_path}")
             print({"plan": plan_path, "advisories": adv_path})
             return {"status": "success", "plan": plan_path, "advisories": adv_path}
             
         except Exception as pipeline_error:
-            print(f"Pipeline error: {pipeline_error}")
+            print(f"DEBUG: Pipeline failed with error: {pipeline_error}")
+            print(f"DEBUG: Pipeline traceback: {traceback.format_exc()}")
             # Create minimal fallback artifacts
             return create_fallback_artifacts(df, cfg, days_ahead)
             
     except Exception as e:
-        print(f"Main function error: {e}")
+        print(f"DEBUG: Main function error: {e}")
+        print(f"DEBUG: Main traceback: {traceback.format_exc()}")
         return {"status": "error", "message": str(e)}
 
 
