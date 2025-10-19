@@ -708,6 +708,72 @@ def get_pipeline_logs():
         "note": "These are the recent ML pipeline execution logs"
     })
 
+@app.route('/api/inspect-files', methods=['GET'])
+def inspect_files():
+    """Inspect the actual CSV files and directory structure"""
+    try:
+        import os
+        
+        inspection = {
+            "current_directory": os.getcwd(),
+            "artifacts_directory_exists": os.path.exists("artifacts"),
+            "files_found": {},
+            "directory_contents": {}
+        }
+        
+        # Check artifacts directory
+        if os.path.exists("artifacts"):
+            artifacts_files = os.listdir("artifacts")
+            inspection["directory_contents"]["artifacts"] = artifacts_files
+            
+            # Check specific files
+            for filename in ["advisories.csv", "daily_plan.csv"]:
+                filepath = os.path.join("artifacts", filename)
+                if os.path.exists(filepath):
+                    try:
+                        df = pd.read_csv(filepath)
+                        inspection["files_found"][filename] = {
+                            "exists": True,
+                            "rows": len(df),
+                            "columns": list(df.columns),
+                            "first_5_rows": df.head().to_dict('records'),
+                            "file_size_bytes": os.path.getsize(filepath)
+                        }
+                    except Exception as e:
+                        inspection["files_found"][filename] = {
+                            "exists": True,
+                            "error": f"Could not read CSV: {str(e)}",
+                            "file_size_bytes": os.path.getsize(filepath)
+                        }
+                else:
+                    inspection["files_found"][filename] = {"exists": False}
+        
+        # Check root directory for any CSV files
+        root_files = [f for f in os.listdir('.') if f.endswith('.csv')]
+        inspection["directory_contents"]["root_csv_files"] = root_files
+        
+        # Check main data file
+        main_data_file = "tastecast_one_item_2023_2025.csv"
+        if os.path.exists(main_data_file):
+            try:
+                df = pd.read_csv(main_data_file)
+                inspection["main_data_file"] = {
+                    "exists": True,
+                    "rows": len(df),
+                    "columns": list(df.columns),
+                    "date_range": f"{df['date'].min()} to {df['date'].max()}" if 'date' in df.columns else "No date column",
+                    "sample_data": df.head(3).to_dict('records')
+                }
+            except Exception as e:
+                inspection["main_data_file"] = {"exists": True, "error": str(e)}
+        else:
+            inspection["main_data_file"] = {"exists": False}
+            
+        return jsonify(inspection)
+        
+    except Exception as e:
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
+
 @app.route('/api/beta-signup', methods=['POST'])
 def beta_signup():
     """Handle beta signup - save email to CSV and send notification"""
