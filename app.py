@@ -280,7 +280,23 @@ def ingest_csv():
                 # Run the prediction pipeline - FORCE it to run
                 try:
                     log_pipeline_event("Starting ML pipeline execution...")
-                    result = run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
+                    log_pipeline_event(f"Calling run_full_pipeline with data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30")
+                    
+                    # Capture any stdout from the pipeline
+                    import io
+                    import contextlib
+                    
+                    old_stdout = sys.stdout
+                    sys.stdout = captured_output = io.StringIO()
+                    
+                    try:
+                        result = run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
+                    finally:
+                        sys.stdout = old_stdout
+                        pipeline_output = captured_output.getvalue()
+                        if pipeline_output:
+                            log_pipeline_event(f"Pipeline stdout: {pipeline_output}")
+                    
                     log_pipeline_event(f"Pipeline completed with result: {result}")
                     
                     if result and result.get("status") in ["success", "fallback_success"]:
@@ -291,6 +307,15 @@ def ingest_csv():
                             'rows': len(df),
                             'pipeline_result': result,
                             'note': 'ML pipeline executed successfully'
+                        }), 200
+                    elif result and result.get("status") == "fallback":
+                        log_pipeline_event("WARNING: Pipeline used fallback processing")
+                        return jsonify({
+                            'message': 'CSV uploaded and processed with fallback',
+                            'filename': filename,
+                            'rows': len(df),
+                            'pipeline_result': result,
+                            'note': 'Pipeline used fallback processing - check logs for details'
                         }), 200
                     else:
                         return jsonify({
