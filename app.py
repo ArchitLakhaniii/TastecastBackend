@@ -483,12 +483,12 @@ def get_forecast():
         daily_plan, advisories = read_latest_artifacts()
         
         if daily_plan is not None and len(daily_plan) > 0:
-            # Extract forecast points from daily plan
-            forecast_points = daily_plan['qty_sold'].head(14).tolist()  # Next 2 weeks
+            # Extract forecast points from daily plan - use qty_total to include specials!
+            forecast_points = daily_plan['qty_total'].head(14).tolist()  # Next 2 weeks including specials
             
-            # Get current metrics
-            total_forecast = daily_plan['qty_sold'].sum()
-            avg_daily = daily_plan['qty_sold'].mean()
+            # Get current metrics - use qty_total for accurate totals
+            total_forecast = daily_plan['qty_total'].sum()
+            avg_daily = daily_plan['qty_total'].mean()
             
             # Calculate waste saved (example calculation)
             if 'special_added' in daily_plan.columns:
