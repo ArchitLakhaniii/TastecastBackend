@@ -274,16 +274,24 @@ def process_csv():
             
             # Run the prediction pipeline
             try:
+                print(f"DEBUG: IMPORTS_AVAILABLE = {IMPORTS_AVAILABLE}")
                 if IMPORTS_AVAILABLE:
+                    print("DEBUG: Running full ML pipeline...")
                     result = run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
+                    print(f"DEBUG: Pipeline result = {result}")
                     
                     # Read generated advisories
                     advisories_path = 'artifacts/advisories.csv'
+                    print(f"DEBUG: Checking for advisories at {advisories_path}")
                     if os.path.exists(advisories_path):
                         advisories_df = pd.read_csv(advisories_path)
                         advisories = advisories_df.to_dict('records')
+                        print(f"DEBUG: Found {len(advisories)} advisories")
+                        if len(advisories) > 0:
+                            print(f"DEBUG: First advisory date: {advisories[0].get('date', 'N/A')}")
                     else:
                         advisories = []
+                        print("DEBUG: No advisories file found")
                     
                     if result and result.get("status") == "success":
                         return jsonify({
@@ -523,6 +531,50 @@ def health_check():
         'timestamp': datetime.now().isoformat(),
         'version': '1.0.0'
     }), 200
+
+@app.route('/api/debug', methods=['GET'])
+def debug_info():
+    """Debug endpoint to check ML pipeline status"""
+    try:
+        import os
+        debug_info = {
+            'imports_available': IMPORTS_AVAILABLE,
+            'current_directory': os.getcwd(),
+            'artifacts_exists': os.path.exists('artifacts/advisories.csv'),
+            'config_exists': os.path.exists('config.yaml'),
+            'python_path': sys.path[:3],  # First 3 entries
+        }
+        
+        # Check if artifacts file has recent dates
+        if os.path.exists('artifacts/advisories.csv'):
+            try:
+                import pandas as pd
+                df = pd.read_csv('artifacts/advisories.csv')
+                if len(df) > 0:
+                    first_date = str(df.iloc[0].get('date', ''))
+                    debug_info['artifacts_first_date'] = first_date
+                    debug_info['is_demo_data'] = first_date.startswith('2026')
+                    debug_info['total_advisories'] = len(df)
+            except Exception as e:
+                debug_info['artifacts_error'] = str(e)
+        
+        # Try to test imports
+        try:
+            from run_all import main as run_full_pipeline
+            debug_info['run_all_import'] = 'success'
+        except ImportError as e:
+            debug_info['run_all_import'] = f'failed: {str(e)}'
+        
+        try:
+            from cli import load_config
+            debug_info['cli_import'] = 'success'
+        except ImportError as e:
+            debug_info['cli_import'] = f'failed: {str(e)}'
+            
+        return jsonify(debug_info), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Debug failed: {str(e)}'}), 500
 
 @app.route('/api/beta-signup', methods=['POST'])
 def beta_signup():
