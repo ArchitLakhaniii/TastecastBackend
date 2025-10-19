@@ -313,6 +313,58 @@ def get_contacts():
         print(f"Get contacts error: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/restore-demo', methods=['POST'])
+def restore_demo_data():
+    """Restore the original demo data"""
+    try:
+        restored_items = []
+        errors = []
+        
+        # Check for backup file and restore it
+        backup_file = 'tastecast_one_item_2023_2025.csv.backup'
+        main_file = 'tastecast_one_item_2023_2025.csv'
+        
+        if os.path.exists(backup_file):
+            try:
+                # Remove current main file if exists
+                if os.path.exists(main_file):
+                    os.remove(main_file)
+                
+                # Restore from backup
+                os.rename(backup_file, main_file)
+                restored_items.append('demo data file restored')
+                
+                # Run the pipeline to regenerate artifacts
+                try:
+                    result = subprocess.run(['python', 'run_all.py'], 
+                                          capture_output=True, text=True, timeout=30)
+                    if result.returncode == 0:
+                        restored_items.append('ML artifacts regenerated')
+                    else:
+                        errors.append(f"Pipeline failed: {result.stderr}")
+                except Exception as pipeline_error:
+                    errors.append(f"Pipeline error: {str(pipeline_error)}")
+                
+            except Exception as e:
+                errors.append(f"Failed to restore demo data: {str(e)}")
+        else:
+            errors.append("No backup demo data found to restore")
+        
+        status = 'success' if restored_items and not errors else 'partial' if restored_items else 'failed'
+        
+        response = {
+            'status': status,
+            'restored_items': restored_items
+        }
+        
+        if errors:
+            response['errors'] = errors
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/api/clear-data', methods=['POST'])
 def clear_data():
     """Clear all ML-generated data (advisories, daily plan, forecast artifacts)"""
@@ -337,10 +389,19 @@ def clear_data():
         main_data_file = 'tastecast_one_item_2023_2025.csv'
         if os.path.exists(main_data_file):
             try:
-                os.remove(main_data_file)
-                cleared_items.append('main data file')
+                # Rename the default demo file instead of deleting it (so we can restore if needed)
+                backup_name = 'tastecast_one_item_2023_2025.csv.backup'
+                if os.path.exists(backup_name):
+                    os.remove(backup_name)  # Remove old backup
+                os.rename(main_data_file, backup_name)
+                cleared_items.append('main data file (moved to backup)')
             except Exception as e:
                 errors.append(f"Failed to clear main data file: {str(e)}")
+        
+        # Also check for the backup file and clear it if specifically requested
+        backup_file = 'tastecast_one_item_2023_2025.csv.backup'
+        if os.path.exists(backup_file):
+            cleared_items.append('backup demo data available for restore')
         
         # Clear uploads directory
         uploads_dir = 'uploads'
@@ -764,8 +825,12 @@ def get_advisories():
             
             return jsonify({'advisories': advisories_list}), 200
         else:
-            # Return empty advisories if no data (no CSV uploaded)
-            return jsonify({'advisories': []}), 200
+            # Return empty advisories if no data (no CSV uploaded or data cleared)
+            log_pipeline_event("No advisories data available - data may have been cleared")
+            return jsonify({
+                'advisories': [],
+                'message': 'No data available - upload CSV to generate recommendations'
+            }), 200
             
     except Exception as e:
         print(f"Advisories error: {e}")
