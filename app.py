@@ -227,14 +227,90 @@ def contact():
     """Handle contact form submission"""
     try:
         data = request.get_json()
-        email = data.get('email')
+        
+        # Validate required fields
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip()
+        message = data.get('message', '').strip()
+        
+        if not name:
+            return jsonify({'error': 'Name is required'}), 400
         if not email:
             return jsonify({'error': 'Email is required'}), 400
+        if not message:
+            return jsonify({'error': 'Message is required'}), 400
         
-        # In a real app, you'd save this to a database or send an email
-        print(f"New contact request: {email}")
-        return jsonify({'message': 'Contact request received'}), 200
+        # Basic email validation
+        if '@' not in email or '.' not in email:
+            return jsonify({'error': 'Please enter a valid email address'}), 400
+        
+        # Create contact submission
+        submission = {
+            'name': name,
+            'email': email,
+            'message': message,
+            'timestamp': datetime.now().isoformat(),
+            'id': f"contact_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        }
+        
+        # Save to CSV file (in production, you'd use a proper database)
+        import os
+        import csv
+        
+        contacts_file = 'contacts/submissions.csv'
+        os.makedirs('contacts', exist_ok=True)
+        
+        # Check if file exists to determine if we need headers
+        file_exists = os.path.exists(contacts_file)
+        
+        with open(contacts_file, 'a', newline='', encoding='utf-8') as csvfile:
+            fieldnames = ['id', 'timestamp', 'name', 'email', 'message']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            
+            # Write headers if this is a new file
+            if not file_exists:
+                writer.writeheader()
+            
+            writer.writerow(submission)
+        
+        return jsonify({
+            'message': 'Thank you for your message! We will get back to you soon.',
+            'status': 'success',
+            'submission_id': submission['id']
+        }), 200
+        
     except Exception as e:
+        print(f"Contact submission error: {e}")
+        return jsonify({'error': 'Failed to submit contact form. Please try again.'}), 500
+
+@app.route('/api/contacts', methods=['GET'])
+def get_contacts():
+    """Get all contact submissions (admin endpoint)"""
+    try:
+        import os
+        import csv
+        
+        contacts_file = 'contacts/submissions.csv'
+        
+        if not os.path.exists(contacts_file):
+            return jsonify({'contacts': [], 'total': 0}), 200
+        
+        contacts = []
+        with open(contacts_file, 'r', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                contacts.append(row)
+        
+        # Sort by timestamp (newest first)
+        contacts.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return jsonify({
+            'contacts': contacts,
+            'total': len(contacts)
+        }), 200
+        
+    except Exception as e:
+        print(f"Get contacts error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ingest', methods=['POST'])
