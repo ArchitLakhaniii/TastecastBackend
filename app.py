@@ -313,6 +313,88 @@ def get_contacts():
         print(f"Get contacts error: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/clear-data', methods=['POST'])
+def clear_data():
+    """Clear all ML-generated data (advisories, daily plan, forecast artifacts)"""
+    try:
+        import os
+        import shutil
+        
+        cleared_items = []
+        errors = []
+        
+        # Clear artifacts directory (advisories and daily plan)
+        artifacts_dir = 'artifacts'
+        if os.path.exists(artifacts_dir):
+            try:
+                shutil.rmtree(artifacts_dir)
+                os.makedirs(artifacts_dir, exist_ok=True)
+                cleared_items.append('artifacts directory (advisories & daily plan)')
+            except Exception as e:
+                errors.append(f"Failed to clear artifacts: {str(e)}")
+        
+        # Clear main data file (uploaded CSV)
+        main_data_file = 'tastecast_one_item_2023_2025.csv'
+        if os.path.exists(main_data_file):
+            try:
+                os.remove(main_data_file)
+                cleared_items.append('main data file')
+            except Exception as e:
+                errors.append(f"Failed to clear main data file: {str(e)}")
+        
+        # Clear uploads directory
+        uploads_dir = 'uploads'
+        if os.path.exists(uploads_dir):
+            try:
+                shutil.rmtree(uploads_dir)
+                os.makedirs(uploads_dir, exist_ok=True)
+                cleared_items.append('uploads directory')
+            except Exception as e:
+                errors.append(f"Failed to clear uploads: {str(e)}")
+        
+        # Clear any legacy forecast files
+        legacy_files = []
+        for file in os.listdir('.'):
+            if (file.startswith('tastecast_daily_plan_') or 
+                file.startswith('tastecast_weekly_advisories_') or
+                file.endswith('_per_ingredient.csv')):
+                legacy_files.append(file)
+        
+        for file in legacy_files:
+            try:
+                os.remove(file)
+                cleared_items.append(f'legacy file: {file}')
+            except Exception as e:
+                errors.append(f"Failed to remove {file}: {str(e)}")
+        
+        # Clear pipeline logs
+        global PIPELINE_LOGS
+        PIPELINE_LOGS.clear()
+        cleared_items.append('pipeline logs')
+        
+        # Log the clear operation
+        log_pipeline_event("DATA CLEARED: All ML artifacts and uploads removed")
+        
+        response = {
+            'message': 'Data cleared successfully',
+            'cleared_items': cleared_items,
+            'status': 'success'
+        }
+        
+        if errors:
+            response['warnings'] = errors
+            response['status'] = 'partial_success'
+        
+        return jsonify(response), 200
+        
+    except Exception as e:
+        print(f"Clear data error: {e}")
+        return jsonify({
+            'error': 'Failed to clear data',
+            'details': str(e),
+            'status': 'error'
+        }), 500
+
 @app.route('/api/ingest', methods=['POST'])
 def ingest_csv():
     """Handle CSV file upload and trigger prediction pipeline"""
