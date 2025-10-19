@@ -41,24 +41,29 @@ except ImportError as e:
         # Create comprehensive fallback function that actually creates new data
         def run_full_pipeline(data_csv=None, days_ahead=30):
             """Enhanced fallback pipeline function that creates realistic data"""
+            log_pipeline_event("FALLBACK: Starting fallback pipeline execution")
             try:
                 import pandas as pd
                 import os
                 from datetime import datetime, timedelta
                 
-                print("INFO: Running fallback ML pipeline...")
+                log_pipeline_event("FALLBACK: Imports successful, processing data")
                 
                 # Read the uploaded CSV to get recent data
                 if data_csv and os.path.exists(data_csv):
+                    log_pipeline_event(f"FALLBACK: Reading CSV from {data_csv}")
                     df = pd.read_csv(data_csv, parse_dates=['date'])
                     recent_avg = df['qty_sold'].tail(14).mean()  # Last 2 weeks average
                     last_date = pd.to_datetime(df['date'].max())
+                    log_pipeline_event(f"FALLBACK: Analyzed {len(df)} rows, recent avg: {recent_avg:.1f}, last date: {last_date}")
                 else:
+                    log_pipeline_event("FALLBACK: No CSV found, using default values")
                     recent_avg = 8.5
                     last_date = datetime.now()
                 
                 # Create artifacts directory
                 os.makedirs("artifacts", exist_ok=True)
+                log_pipeline_event("FALLBACK: Created artifacts directory")
                 
                 # Generate realistic advisories based on the data
                 start_date = last_date + timedelta(days=1)
@@ -94,6 +99,7 @@ except ImportError as e:
                 advisories_df = pd.DataFrame(advisories)
                 advisories_path = 'artifacts/advisories.csv'
                 advisories_df.to_csv(advisories_path, index=False)
+                log_pipeline_event(f"FALLBACK: Saved {len(advisories)} advisories to {advisories_path}")
                 
                 # Create basic daily plan
                 dates = [start_date + timedelta(days=i) for i in range(days_ahead)]
@@ -106,8 +112,9 @@ except ImportError as e:
                 
                 daily_plan_path = 'artifacts/daily_plan.csv'
                 daily_plan.to_csv(daily_plan_path, index=False)
+                log_pipeline_event(f"FALLBACK: Saved daily plan to {daily_plan_path}")
                 
-                print(f"INFO: Fallback pipeline created {len(advisories)} advisories")
+                log_pipeline_event(f"FALLBACK: Successfully completed pipeline with {len(advisories)} advisories")
                 return {
                     "status": "fallback_success", 
                     "plan": daily_plan_path, 
@@ -116,7 +123,7 @@ except ImportError as e:
                 }
                 
             except Exception as e:
-                print(f"ERROR: Fallback pipeline failed: {e}")
+                log_pipeline_event(f"FALLBACK ERROR: Pipeline failed: {e}")
                 return {"status": "error", "message": f"Fallback pipeline failed: {str(e)}"}
     
     # Set fallback for other functions
@@ -233,25 +240,34 @@ def contact():
 @app.route('/api/ingest', methods=['POST'])
 def ingest_csv():
     """Handle CSV file upload and trigger prediction pipeline"""
+    log_pipeline_event("CSV upload endpoint called (/api/ingest)")
+    
     try:
         if 'file' not in request.files:
+            log_pipeline_event("ERROR: No file provided in request")
             return jsonify({'error': 'No file provided'}), 400
         
         file = request.files['file']
         if file.filename == '':
+            log_pipeline_event("ERROR: No file selected")
             return jsonify({'error': 'No file selected'}), 400
+        
+        log_pipeline_event(f"Processing file: {file.filename}")
         
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
+            log_pipeline_event(f"File saved to: {filepath}")
             
             # Validate CSV format
             try:
                 df = pd.read_csv(filepath)
                 required_columns = ['date', 'qty_sold']
+                log_pipeline_event(f"CSV loaded with {len(df)} rows and columns: {list(df.columns)}")
                 
                 if not all(col in df.columns for col in required_columns):
+                    log_pipeline_event(f"ERROR: Missing required columns. Need: {required_columns}, Found: {list(df.columns)}")
                     return jsonify({
                         'error': f'CSV must contain columns: {required_columns}. Found: {list(df.columns)}'
                     }), 400
@@ -259,13 +275,16 @@ def ingest_csv():
                 # Move the uploaded file to replace the default data file
                 import shutil
                 shutil.copy(filepath, 'tastecast_one_item_2023_2025.csv')
+                log_pipeline_event("CSV copied to main data file: tastecast_one_item_2023_2025.csv")
                 
                 # Run the prediction pipeline - FORCE it to run
                 try:
-                    print("INFO: Force-running ML pipeline after CSV upload...")
+                    log_pipeline_event("Starting ML pipeline execution...")
                     result = run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
+                    log_pipeline_event(f"Pipeline completed with result: {result}")
                     
                     if result and result.get("status") in ["success", "fallback_success"]:
+                        log_pipeline_event("SUCCESS: Pipeline executed successfully")
                         return jsonify({
                             'message': 'CSV uploaded and processed successfully',
                             'filename': filename,
@@ -596,49 +615,98 @@ def health_check():
         'version': '1.0.0'
     }), 200
 
+# Global variable to store pipeline logs
+PIPELINE_LOGS = []
+
+def log_pipeline_event(message):
+    """Add a timestamped log entry"""
+    from datetime import datetime
+    timestamp = datetime.now().isoformat()
+    log_entry = f"[{timestamp}] {message}"
+    PIPELINE_LOGS.append(log_entry)
+    print(log_entry)  # Also print to console
+    
+    # Keep only last 50 logs to prevent memory issues
+    if len(PIPELINE_LOGS) > 50:
+        PIPELINE_LOGS.pop(0)
+
 @app.route('/api/debug', methods=['GET'])
-def debug_info():
-    """Debug endpoint to check ML pipeline status"""
+def debug_imports():
+    """Debug endpoint to check import status and environment"""
     try:
         import os
+        
         debug_info = {
-            'imports_available': IMPORTS_AVAILABLE,
-            'current_directory': os.getcwd(),
-            'artifacts_exists': os.path.exists('artifacts/advisories.csv'),
-            'config_exists': os.path.exists('config.yaml'),
-            'python_path': sys.path[:3],  # First 3 entries
+            "current_directory": os.getcwd(),
+            "python_path": sys.path[:3],  # First 3 entries
+            "imports_available": IMPORTS_AVAILABLE,
         }
         
-        # Check if artifacts file has recent dates
-        if os.path.exists('artifacts/advisories.csv'):
-            try:
-                import pandas as pd
-                df = pd.read_csv('artifacts/advisories.csv')
-                if len(df) > 0:
-                    first_date = str(df.iloc[0].get('date', ''))
-                    debug_info['artifacts_first_date'] = first_date
-                    debug_info['is_demo_data'] = first_date.startswith('2026')
-                    debug_info['total_advisories'] = len(df)
-            except Exception as e:
-                debug_info['artifacts_error'] = str(e)
-        
-        # Try to test imports
-        try:
-            from run_all import main as run_full_pipeline
-            debug_info['run_all_import'] = 'success'
-        except ImportError as e:
-            debug_info['run_all_import'] = f'failed: {str(e)}'
-        
+        # Test individual imports
         try:
             from cli import load_config
-            debug_info['cli_import'] = 'success'
-        except ImportError as e:
-            debug_info['cli_import'] = f'failed: {str(e)}'
+            debug_info["cli_import"] = "success"
             
-        return jsonify(debug_info), 200
+            # Try to load config
+            try:
+                config = load_config()
+                debug_info["config_exists"] = True
+            except:
+                debug_info["config_exists"] = False
+                
+        except ImportError as e:
+            debug_info["cli_import"] = f"failed: {str(e)}"
+            debug_info["config_exists"] = False
+            
+        try:
+            from run_all import main
+            debug_info["run_all_import"] = "success"
+        except ImportError as e:
+            debug_info["run_all_import"] = f"failed: {str(e)}"
+            
+        # Check if artifacts exist
+        artifacts_path = "artifacts/advisories.csv"
+        if os.path.exists(artifacts_path):
+            debug_info["artifacts_exists"] = True
+            try:
+                import pandas as pd
+                df = pd.read_csv(artifacts_path)
+                debug_info["total_advisories"] = len(df)
+                
+                # Check if this looks like demo data vs real data
+                if len(df) > 0:
+                    first_date = df['date'].iloc[0] if 'date' in df.columns else 'unknown'
+                    debug_info["artifacts_first_date"] = first_date
+                    
+                    # Check if it's demo data (dates in 2026+ or default messages)
+                    is_demo = any([
+                        '2026' in str(first_date),
+                        'Default output' in str(df.to_string()) if hasattr(df, 'to_string') else False,
+                        len(df) == 23  # Default demo data has 23 rows
+                    ])
+                    debug_info["is_demo_data"] = is_demo
+                else:
+                    debug_info["is_demo_data"] = True
+                    
+            except Exception as e:
+                debug_info["artifacts_read_error"] = str(e)
+        else:
+            debug_info["artifacts_exists"] = False
+            debug_info["is_demo_data"] = True
+            
+        return jsonify(debug_info)
         
     except Exception as e:
-        return jsonify({'error': f'Debug failed: {str(e)}'}), 500
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
+
+@app.route('/api/logs', methods=['GET'])
+def get_pipeline_logs():
+    """Get recent pipeline execution logs"""
+    return jsonify({
+        "logs": PIPELINE_LOGS[-20:],  # Last 20 logs
+        "total_logs": len(PIPELINE_LOGS),
+        "note": "These are the recent ML pipeline execution logs"
+    })
 
 @app.route('/api/beta-signup', methods=['POST'])
 def beta_signup():
