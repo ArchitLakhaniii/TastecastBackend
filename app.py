@@ -698,6 +698,23 @@ def get_forecast():
     try:
         location = request.args.get('location', 'default')
         
+        # Check if data has been cleared (no main CSV file and no artifacts)
+        main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
+        artifacts_exist = os.path.exists('artifacts/daily_plan.csv') or os.path.exists('artifacts/advisories.csv')
+        
+        if not main_csv_exists and not artifacts_exist:
+            # Data has been cleared - return empty state
+            return jsonify({
+                'points': [],
+                'location': location,
+                'total_forecast': 0,
+                'avg_daily': 0,
+                'waste_saved_lbs': 0,
+                'co2_reduced_kg': 0,
+                'message': 'No data available - upload CSV to generate forecast',
+                'cleared': True
+            }), 200
+        
         # Read the latest daily plan
         daily_plan, advisories = read_latest_artifacts()
         
@@ -732,7 +749,8 @@ def get_forecast():
                 'total_forecast': 0,
                 'avg_daily': 0,
                 'waste_saved_lbs': 0,
-                'co2_reduced_kg': 0
+                'co2_reduced_kg': 0,
+                'message': 'No data available - upload CSV to generate forecast'
             }
         
         return jsonify(response_data), 200
@@ -767,6 +785,19 @@ def post_promo():
 def get_advisories():
     """Get current advisories and recommendations"""
     try:
+        # Check if data has been cleared (no main CSV file and no artifacts)
+        main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
+        artifacts_exist = os.path.exists('artifacts/daily_plan.csv') or os.path.exists('artifacts/advisories.csv')
+        
+        if not main_csv_exists and not artifacts_exist:
+            # Data has been cleared - return empty state
+            log_pipeline_event("Data cleared - returning empty advisories")
+            return jsonify({
+                'advisories': [],
+                'message': 'No data available - upload CSV to generate recommendations',
+                'cleared': True
+            }), 200
+        
         daily_plan, advisories = read_latest_artifacts()
         
         if advisories is not None and len(advisories) > 0:
@@ -829,7 +860,8 @@ def get_advisories():
             log_pipeline_event("No advisories data available - data may have been cleared")
             return jsonify({
                 'advisories': [],
-                'message': 'No data available - upload CSV to generate recommendations'
+                'message': 'No data available - upload CSV to generate recommendations',
+                'cleared': not main_csv_exists and not artifacts_exist
             }), 200
             
     except Exception as e:
@@ -840,6 +872,19 @@ def get_advisories():
 def get_daily_plan():
     """Get the detailed daily plan with inventory projections"""
     try:
+        # Check if data has been cleared (no main CSV file and no artifacts)
+        main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
+        artifacts_exist = os.path.exists('artifacts/daily_plan.csv') or os.path.exists('artifacts/advisories.csv')
+        
+        if not main_csv_exists and not artifacts_exist:
+            # Data has been cleared - return empty state
+            return jsonify({
+                'daily_plan': [],
+                'total_days': 0,
+                'message': 'No data available - upload CSV to generate daily plan',
+                'cleared': True
+            }), 200
+        
         daily_plan, advisories = read_latest_artifacts()
         
         if daily_plan is not None:
@@ -862,7 +907,11 @@ def get_daily_plan():
                 'total_days': len(plan_data)
             }), 200
         else:
-            return jsonify({'error': 'No daily plan available'}), 404
+            return jsonify({
+                'daily_plan': [],
+                'total_days': 0,
+                'message': 'No daily plan available - upload CSV to generate plan'
+            }), 200
             
     except Exception as e:
         print(f"Daily plan error: {e}")
