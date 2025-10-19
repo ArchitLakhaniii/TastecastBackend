@@ -552,11 +552,26 @@ def get_advisories():
         
         if advisories is not None and len(advisories) > 0:
             # Check if this is default demo data or user-generated data
-            # We can detect this by checking if dates are in 2026 (demo data) vs current dates (user data)
+            # New logic: check if we have realistic ML-generated data vs simple fallback data
             is_demo_data = False
-            if len(advisories) > 0:
-                first_date = str(advisories.iloc[0].get('date', ''))
-                is_demo_data = first_date.startswith('2026')  # Demo data uses 2026 dates
+            
+            # Check for demo data indicators:
+            # 1. Only 1 row with generic message
+            # 2. Message contains "Default output" or "Based on recent average"
+            # 3. Type is just 'forecast' instead of specific actions like 'BUY_APPLES'
+            if len(advisories) <= 1:
+                first_message = str(advisories.iloc[0].get('message', ''))
+                first_type = str(advisories.iloc[0].get('type', ''))
+                is_demo_data = (
+                    'Default output' in first_message or 
+                    'Based on recent average' in first_message or
+                    first_type == 'forecast'
+                )
+            else:
+                # Multiple rows = likely real ML data
+                is_demo_data = False
+            
+            log_pipeline_event(f"Advisories analysis: {len(advisories)} rows, is_demo_data={is_demo_data}")
             
             # Convert advisories to proper format
             advisories_list = []
