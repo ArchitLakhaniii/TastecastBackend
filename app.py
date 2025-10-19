@@ -334,15 +334,6 @@ def restore_demo_data():
                 os.rename(backup_file, main_file)
                 restored_items.append('demo data file restored')
                 
-                # Remove the cleared marker since we now have data again
-                cleared_marker_path = 'artifacts/.data_cleared'
-                if os.path.exists(cleared_marker_path):
-                    try:
-                        os.remove(cleared_marker_path)
-                        restored_items.append('cleared state marker removed')
-                    except Exception as e:
-                        errors.append(f"Could not remove cleared marker: {str(e)}")
-                
                 # Run the pipeline to regenerate artifacts
                 try:
                     result = subprocess.run(['python', 'run_all.py'], 
@@ -441,15 +432,6 @@ def clear_data():
         global PIPELINE_LOGS
         PIPELINE_LOGS.clear()
         cleared_items.append('pipeline logs')
-        
-        # Create a "cleared" marker file to indicate data has been explicitly cleared
-        try:
-            os.makedirs('artifacts', exist_ok=True)
-            with open('artifacts/.data_cleared', 'w') as f:
-                f.write(datetime.now().isoformat())
-            cleared_items.append('cleared state marker created')
-        except Exception as e:
-            errors.append(f"Failed to create cleared marker: {str(e)}")
         
         # Log the clear operation
         log_pipeline_event("DATA CLEARED: All ML artifacts and uploads removed")
@@ -617,15 +599,6 @@ def process_csv():
             import shutil
             shutil.copy(temp_filepath, 'tastecast_one_item_2023_2025.csv')
             
-            # Remove the cleared marker since we now have new data
-            cleared_marker_path = 'artifacts/.data_cleared'
-            if os.path.exists(cleared_marker_path):
-                try:
-                    os.remove(cleared_marker_path)
-                    print("Removed cleared marker - new data uploaded")
-                except Exception as e:
-                    print(f"Warning: Could not remove cleared marker: {e}")
-            
             # Run the prediction pipeline
             try:
                 print(f"DEBUG: IMPORTS_AVAILABLE = {IMPORTS_AVAILABLE}")
@@ -725,10 +698,11 @@ def get_forecast():
     try:
         location = request.args.get('location', 'default')
         
-        # Check if data has been explicitly cleared by looking for the cleared marker
-        cleared_marker_exists = os.path.exists('artifacts/.data_cleared')
+        # Check if data has been cleared (no main CSV file and no artifacts)
+        main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
+        artifacts_exist = os.path.exists('artifacts/daily_plan.csv') or os.path.exists('artifacts/advisories.csv')
         
-        if cleared_marker_exists:
+        if not main_csv_exists and not artifacts_exist:
             # Data has been cleared - return empty state
             return jsonify({
                 'points': [],
@@ -811,10 +785,11 @@ def post_promo():
 def get_advisories():
     """Get current advisories and recommendations"""
     try:
-        # Check if data has been explicitly cleared by looking for the cleared marker
-        cleared_marker_exists = os.path.exists('artifacts/.data_cleared')
+        # Check if data has been cleared (no main CSV file and no artifacts)
+        main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
+        artifacts_exist = os.path.exists('artifacts/daily_plan.csv') or os.path.exists('artifacts/advisories.csv')
         
-        if cleared_marker_exists:
+        if not main_csv_exists and not artifacts_exist:
             # Data has been cleared - return empty state
             log_pipeline_event("Data cleared - returning empty advisories")
             return jsonify({
@@ -886,7 +861,7 @@ def get_advisories():
             return jsonify({
                 'advisories': [],
                 'message': 'No data available - upload CSV to generate recommendations',
-                'cleared': cleared_marker_exists
+                'cleared': not main_csv_exists and not artifacts_exist
             }), 200
             
     except Exception as e:
@@ -897,10 +872,11 @@ def get_advisories():
 def get_daily_plan():
     """Get the detailed daily plan with inventory projections"""
     try:
-        # Check if data has been explicitly cleared by looking for the cleared marker
-        cleared_marker_exists = os.path.exists('artifacts/.data_cleared')
+        # Check if data has been cleared (no main CSV file and no artifacts)
+        main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
+        artifacts_exist = os.path.exists('artifacts/daily_plan.csv') or os.path.exists('artifacts/advisories.csv')
         
-        if cleared_marker_exists:
+        if not main_csv_exists and not artifacts_exist:
             # Data has been cleared - return empty state
             return jsonify({
                 'daily_plan': [],
