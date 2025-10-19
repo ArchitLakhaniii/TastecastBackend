@@ -84,13 +84,18 @@ def main(data_csv: str = "tastecast_one_item_2023_2025.csv", days_ahead: int | N
             # base plan
             future["qty_total"] = future["qty_sold"]
             recipe = cfg["production"]["recipe"]
-            for ing, per in recipe.items():
-                future[f"{ing}_need"] = future["qty_total"] * per
+            # Don't calculate ingredients yet - do it after specials are added
 
             # schedule specials and advisories
             restock_lots = cfg["store"].get("restock_lot_size", {})
             vendor_weekday = cfg["store"].get("vendor_weekday", None)
             plan_df, adv_df = schedule_specials(future, recipe, cfg["production"]["special_days"], cfg["production"]["special_boost_max_per_day"], start_stocks=None, restock_lot_sizes=restock_lots, vendor_weekday=vendor_weekday)
+
+            # IMPORTANT: Recalculate ingredient needs AFTER specials are added
+            print(f"DEBUG: Recalculating ingredient needs after specials...")
+            for ing, per in recipe.items():
+                plan_df[f"{ing}_need"] = plan_df["qty_total"] * per
+                print(f"DEBUG: Updated {ing}_need based on qty_total (includes specials)")
 
             # export artifacts
             os.makedirs("artifacts", exist_ok=True)
