@@ -13,6 +13,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
+# New generalized pipeline imports (Mode C)
+from ingestion.loaders import ingest_mode_c
+from engine.pipeline import run_pipeline_mode_c
+from artifacts.writers import write_run_artifacts
+from artifacts.readers import read_run_artifacts, find_latest_run_id
+
 # Add current directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -190,6 +196,46 @@ def read_latest_artifacts():
     except Exception as e:
         print(f"Error reading artifacts: {e}")
         return None, None
+
+
+def _get_run_id():
+    """Return run_id from querystring or header; None means 'current/latest'."""
+    rid = request.args.get("run_id") if request else None
+    if not rid:
+        rid = request.headers.get("X-Tastecast-Run-Id") if request else None
+    return rid or None
+
+
+def _read_versioned_or_current(run_id: str | None):
+    """Read artifacts for a specific run_id, else fall back to current artifacts."""
+    if run_id:
+        try:
+            return read_run_artifacts(run_id)
+        except Exception as e:
+            return {"error": f"Failed to read run_id={run_id}: {str(e)}"}
+
+    # If there is a 'current' artifacts directory already, use it (backward compatible).
+    daily_plan, advisories = read_latest_artifacts()
+    out = {
+        "run_id": None,
+        "daily_plan_df": daily_plan,
+        "advisories_df": advisories,
+        "forecast_df": None,
+        "ingredient_plan_df": None,
+        "forecast_summary": None,
+        "explanations": None,
+        "status": None,
+    }
+
+    # If current doesn't exist, try latest run.
+    if (daily_plan is None and advisories is None):
+        latest = find_latest_run_id()
+        if latest:
+            try:
+                return read_run_artifacts(latest)
+            except Exception:
+                pass
+    return out
 
 @app.route('/', methods=['GET'])
 def home():
@@ -459,112 +505,116 @@ def clear_data():
 
 @app.route('/api/ingest', methods=['POST'])
 def ingest_csv():
-    """Handle CSV file upload and trigger prediction pipeline"""
-    log_pipeline_event("CSV upload endpoint called (/api/ingest)")
-    
+    """Generalized ingestion endpoint (Mode C) with versioned artifacts.\n+\n+    Multipart form-data:\n+    - file: sales CSV (required)\n+    - recipe: recipe_fact CSV (optional)\n+    - ingredients: ingredient_dim CSV (optional)\n+    - inventory: inventory_snapshot CSV (optional)\n+    - mapping: JSON dict canonical->source (optional)\n+    - horizon_days: int (optional)\n+    """
+    log_pipeline_event("Ingest endpoint called (/api/ingest)")
     try:
-        if 'file' not in request.files:
-            log_pipeline_event("ERROR: No file provided in request")
-            return jsonify({'error': 'No file provided'}), 400
-        
-        file = request.files['file']
-        if file.filename == '':
-            log_pipeline_event("ERROR: No file selected")
-            return jsonify({'error': 'No file selected'}), 400
-        
-        log_pipeline_event(f"Processing file: {file.filename}")
-        
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            log_pipeline_event(f"File saved to: {filepath}")
-            
-            # Validate CSV format
+        if "file" not in request.files:
+            return jsonify({"error": "Missing required sales file field 'file'"}), 400
+
+        sales_file = request.files["file"]
+        if not sales_file or sales_file.filename == "":
+            return jsonify({"error": "No sales file selected"}), 400
+        if not allowed_file(sales_file.filename):
+            return jsonify({"error": "Invalid file type. Only CSV files are allowed."}), 400
+
+        filename = secure_filename(sales_file.filename)
+        sales_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        sales_file.save(sales_path)
+
+        # Optional additional tables
+        def _opt_csv(name: str):
+            f = request.files.get(name)
+            if not f or f.filename == "":
+                return None, None
+            if not allowed_file(f.filename):
+                raise ValueError(f"Invalid file type for {name}; expected CSV")
+            fn = secure_filename(f.filename)
+            path = os.path.join(app.config["UPLOAD_FOLDER"], f"{name}__{fn}")
+            f.save(path)
+            return path, fn
+
+        recipe_path, _ = _opt_csv("recipe")
+        ingredients_path, _ = _opt_csv("ingredients")
+        inventory_path, _ = _opt_csv("inventory")
+
+        mapping_override = None
+        mapping_raw = request.form.get("mapping")
+        if mapping_raw:
             try:
-                df = pd.read_csv(filepath)
-                required_columns = ['date', 'qty_sold']
-                log_pipeline_event(f"CSV loaded with {len(df)} rows and columns: {list(df.columns)}")
-                
-                if not all(col in df.columns for col in required_columns):
-                    log_pipeline_event(f"ERROR: Missing required columns. Need: {required_columns}, Found: {list(df.columns)}")
-                    return jsonify({
-                        'error': f'CSV must contain columns: {required_columns}. Found: {list(df.columns)}'
-                    }), 400
-                
-                # Move the uploaded file to replace the default data file
-                import shutil
-                shutil.copy(filepath, 'tastecast_one_item_2023_2025.csv')
-                log_pipeline_event("CSV copied to main data file: tastecast_one_item_2023_2025.csv")
-                
-                # Run the prediction pipeline - FORCE it to run
-                try:
-                    log_pipeline_event("Starting ML pipeline execution...")
-                    log_pipeline_event(f"Calling run_full_pipeline with data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30")
-                    
-                    # Capture any stdout from the pipeline
-                    import io
-                    import contextlib
-                    
-                    old_stdout = sys.stdout
-                    sys.stdout = captured_output = io.StringIO()
-                    
-                    try:
-                        result = run_full_pipeline(data_csv='tastecast_one_item_2023_2025.csv', days_ahead=30)
-                    finally:
-                        sys.stdout = old_stdout
-                        pipeline_output = captured_output.getvalue()
-                        if pipeline_output:
-                            log_pipeline_event(f"Pipeline stdout: {pipeline_output}")
-                    
-                    log_pipeline_event(f"Pipeline completed with result: {result}")
-                    
-                    if result and result.get("status") in ["success", "fallback_success"]:
-                        log_pipeline_event("SUCCESS: Pipeline executed successfully")
-                        return jsonify({
-                            'message': 'CSV uploaded and processed successfully',
-                            'filename': filename,
-                            'rows': len(df),
-                            'pipeline_result': result,
-                            'note': 'ML pipeline executed successfully'
-                        }), 200
-                    elif result and result.get("status") == "fallback":
-                        log_pipeline_event("WARNING: Pipeline used fallback processing")
-                        return jsonify({
-                            'message': 'CSV uploaded and processed with fallback',
-                            'filename': filename,
-                            'rows': len(df),
-                            'pipeline_result': result,
-                            'note': 'Pipeline used fallback processing - check logs for details'
-                        }), 200
-                    else:
-                        return jsonify({
-                            'message': 'CSV uploaded but pipeline returned unexpected result',
-                            'filename': filename,
-                            'rows': len(df),
-                            'result': result
-                        }), 200
-                    
-                except Exception as pred_error:
-                    print(f"Prediction error: {pred_error}")
-                    print(traceback.format_exc())
-                    return jsonify({
-                        'message': 'CSV uploaded but prediction failed',
-                        'error': str(pred_error),
-                        'filename': filename,
-                        'rows': len(df)
-                    }), 200  # Still return 200 since upload succeeded
-                
-            except Exception as csv_error:
-                return jsonify({'error': f'Invalid CSV format: {str(csv_error)}'}), 400
-        
-        else:
-            return jsonify({'error': 'Invalid file type. Only CSV files are allowed.'}), 400
-            
+                mapping_override = json.loads(mapping_raw)
+            except Exception:
+                return jsonify({"error": "Invalid JSON in 'mapping' field"}), 400
+
+        horizon_days = request.form.get("horizon_days", None)
+        try:
+            horizon_days = int(horizon_days) if horizon_days is not None else 30
+        except Exception:
+            horizon_days = 30
+
+        # Load raw CSVs
+        sales_df_raw = pd.read_csv(sales_path)
+        recipe_df_raw = pd.read_csv(recipe_path) if recipe_path else None
+        ingredient_df_raw = pd.read_csv(ingredients_path) if ingredients_path else None
+        inventory_df_raw = pd.read_csv(inventory_path) if inventory_path else None
+
+        ingested = ingest_mode_c(
+            sales_df_raw,
+            recipe_df_raw=recipe_df_raw,
+            ingredient_df_raw=ingredient_df_raw,
+            inventory_df_raw=inventory_df_raw,
+            mapping_override=mapping_override,
+        )
+
+        if not ingested.report.get("ok", False):
+            return jsonify(
+                {
+                    "run_id": None,
+                    "validation_report": ingested.report,
+                    "status": "validation_failed",
+                }
+            ), 400
+
+        outputs = run_pipeline_mode_c(
+            ingested.sales_fact,
+            recipe_fact=ingested.recipe_fact,
+            ingredient_dim=ingested.ingredient_dim,
+            inventory_snapshot=ingested.inventory_snapshot,
+            horizon_days=horizon_days,
+        )
+
+        written = write_run_artifacts(
+            run_id=outputs.run_id,
+            daily_plan_df=outputs.daily_plan_df,
+            ingredient_plan_df=outputs.ingredient_plan_df,
+            advisories_df=outputs.advisories_df if outputs.advisories_df is not None else pd.DataFrame(),
+            forecast_df=outputs.forecast_df,
+            forecast_summary=outputs.summary,
+            explanations=outputs.explanations,
+            status=outputs.status,
+            mirror_current=True,
+        )
+
+        return jsonify(
+            {
+                "run_id": outputs.run_id,
+                "validation_report": ingested.report,
+                "pipeline_status": outputs.status,
+                "artifacts": {
+                    "daily_plan_csv": written.daily_plan_csv,
+                    "ingredient_plan_csv": written.ingredient_plan_csv,
+                    "advisories_csv": written.advisories_csv,
+                    "forecast_csv": written.forecast_csv,
+                    "forecast_summary_json": written.forecast_summary_json,
+                    "explanations_json": written.explanations_json,
+                    "status_json": written.status_json,
+                },
+            }
+        ), 200
+
     except Exception as e:
-        print(f"Upload error: {e}")
+        print(f"Ingest error: {e}")
         print(traceback.format_exc())
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
 @app.route('/api/process-csv', methods=['POST'])
 def process_csv():
@@ -698,6 +748,51 @@ def get_forecast():
     """Get forecast data for a specific location"""
     try:
         location = request.args.get('location', 'default')
+        run_id = _get_run_id()
+
+        if run_id:
+            art = _read_versioned_or_current(run_id)
+            if isinstance(art, dict) and art.get("error"):
+                return jsonify({"error": art["error"]}), 404
+            summary = art.get("forecast_summary") if isinstance(art, dict) else None
+            if summary:
+                # Ensure shape matches frontend expectations
+                return jsonify(
+                    {
+                        "points": summary.get("points", []),
+                        "location": location,
+                        "total_forecast": summary.get("total_forecast", 0),
+                        "avg_daily": summary.get("avg_daily", 0),
+                        "forecast_lower_total": summary.get("forecast_lower_total", 0),
+                        "forecast_upper_total": summary.get("forecast_upper_total", 0),
+                        "run_id": run_id,
+                    }
+                ), 200
+            # fall back to daily_plan aggregation if summary missing
+            dp = art.get("daily_plan_df") if isinstance(art, dict) else None
+            if dp is not None:
+                try:
+                    if "qty_total" in dp.columns:
+                        points = dp["qty_total"].head(14).tolist()
+                        total_forecast = float(dp["qty_total"].sum())
+                        avg_daily = float(dp["qty_total"].mean())
+                    else:
+                        points = []
+                        total_forecast = 0.0
+                        avg_daily = 0.0
+                except Exception:
+                    points = []
+                    total_forecast = 0.0
+                    avg_daily = 0.0
+                return jsonify(
+                    {
+                        "points": points,
+                        "location": location,
+                        "total_forecast": int(total_forecast),
+                        "avg_daily": round(avg_daily, 1) if avg_daily else 0,
+                        "run_id": run_id,
+                    }
+                ), 200
         
         # Check if data has been cleared (no main CSV file and no artifacts)
         main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
@@ -786,6 +881,39 @@ def post_promo():
 def get_advisories():
     """Get current advisories and recommendations"""
     try:
+        run_id = _get_run_id()
+        if run_id:
+            art = _read_versioned_or_current(run_id)
+            if isinstance(art, dict) and art.get("error"):
+                return jsonify({"error": art["error"]}), 404
+            adv = art.get("advisories_df") if isinstance(art, dict) else None
+            if adv is None:
+                return jsonify({"advisories": [], "run_id": run_id}), 200
+            advisories_list = []
+            for _, row in adv.iterrows():
+                if "advisory_type" in adv.columns:
+                    advisories_list.append(
+                        {
+                            "date": row.get("date", ""),
+                            "type": row.get("advisory_type", ""),
+                            "message": row.get("message", ""),
+                            "ingredient": row.get("entity_id", None) if row.get("entity_type") == "ingredient" else None,
+                            "qty": row.get("qty", None),
+                            "severity": row.get("severity", None),
+                        }
+                    )
+                else:
+                    advisories_list.append(
+                        {
+                            "date": row.get("date", ""),
+                            "type": row.get("type", ""),
+                            "message": row.get("message", ""),
+                            "ingredient": row.get("ingredient", None) if "ingredient" in adv.columns else None,
+                            "qty": row.get("qty", None) if "qty" in adv.columns else None,
+                        }
+                    )
+            return jsonify({"advisories": advisories_list, "run_id": run_id}), 200
+
         # Check if data has been cleared (no main CSV file and no artifacts)
         main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
         artifacts_exist = os.path.exists('artifacts/daily_plan.csv') or os.path.exists('artifacts/advisories.csv')
@@ -873,6 +1001,26 @@ def get_advisories():
 def get_daily_plan():
     """Get the detailed daily plan with inventory projections"""
     try:
+        run_id = _get_run_id()
+        if run_id:
+            art = _read_versioned_or_current(run_id)
+            if isinstance(art, dict) and art.get("error"):
+                return jsonify({"error": art["error"]}), 404
+            daily_plan = art.get("daily_plan_df") if isinstance(art, dict) else None
+            if daily_plan is None:
+                return jsonify({"daily_plan": [], "total_days": 0, "run_id": run_id}), 200
+            plan_data = daily_plan.to_dict("records")
+            # normalize NaNs / timestamps
+            for record in plan_data:
+                for key, value in list(record.items()):
+                    if pd.isna(value):
+                        record[key] = None
+                    elif isinstance(value, (pd.Timestamp)):
+                        record[key] = value.isoformat()
+                    elif hasattr(value, "item"):
+                        record[key] = value.item()
+            return jsonify({"daily_plan": plan_data, "total_days": len(plan_data), "run_id": run_id}), 200
+
         # Check if data has been cleared (no main CSV file and no artifacts)
         main_csv_exists = os.path.exists('tastecast_one_item_2023_2025.csv')
         artifacts_exist = os.path.exists('artifacts/daily_plan.csv') or os.path.exists('artifacts/advisories.csv')
@@ -918,6 +1066,63 @@ def get_daily_plan():
         print(f"Daily plan error: {e}")
         print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ingredient-plan', methods=['GET'])
+def get_ingredient_plan():
+    """Get ingredient-level plan and reorder calculations for a run."""
+    try:
+        run_id = _get_run_id()
+        art = _read_versioned_or_current(run_id)
+        if isinstance(art, dict) and art.get("error"):
+            return jsonify({"error": art["error"]}), 404
+
+        ing_df = art.get("ingredient_plan_df") if isinstance(art, dict) else None
+        if ing_df is None and os.path.exists("artifacts/ingredient_plan.csv"):
+            ing_df = pd.read_csv("artifacts/ingredient_plan.csv")
+
+        if ing_df is None:
+            return jsonify({"ingredient_plan": [], "total_rows": 0, "run_id": run_id}), 200
+
+        data = ing_df.to_dict("records")
+        return jsonify({"ingredient_plan": data, "total_rows": len(data), "run_id": run_id}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/explanations', methods=['GET'])
+def get_explanations():
+    """Return minimal forecast explanations for a run (v1 placeholder)."""
+    try:
+        run_id = _get_run_id()
+        art = _read_versioned_or_current(run_id)
+        if isinstance(art, dict) and art.get("error"):
+            return jsonify({"error": art["error"]}), 404
+        explanations = art.get("explanations") if isinstance(art, dict) else None
+        return jsonify({"run_id": run_id, "explanations": explanations or {"note": "No explanations available"}}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/metrics', methods=['GET'])
+def get_metrics():
+    """Return basic model + simulation metrics for a run (v1 minimal)."""
+    try:
+        run_id = _get_run_id()
+        art = _read_versioned_or_current(run_id)
+        if isinstance(art, dict) and art.get("error"):
+            return jsonify({"error": art["error"]}), 404
+        status = art.get("status") if isinstance(art, dict) else None
+        forecast = art.get("forecast_df") if isinstance(art, dict) else None
+        metrics = {"run_id": run_id, "status": status or {}}
+        if forecast is not None and len(forecast) > 0:
+            metrics["forecast_rows"] = int(len(forecast))
+            metrics["series_count"] = int(forecast.groupby(["store_id", "menu_item_id"]).ngroups)
+            metrics["total_pred_p50"] = float(pd.to_numeric(forecast["pred_p50"], errors="coerce").fillna(0.0).sum())
+        return jsonify(metrics), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
