@@ -595,7 +595,8 @@ def ingest_csv():
 
         if has_all_in_one:
             # --- ALL-IN-ONE MODE: split into four logical tables ---
-            # Sales table
+            # Sales table stays very close to the raw shape; mapping_override
+            # below will turn `store`/`menu_item` into canonical fields.
             sales_cols = [c for c in ["date", "store", "menu_item", "qty_sold"] if c in full_df.columns]
             sales_df_raw = (
                 full_df[sales_cols]
@@ -603,18 +604,35 @@ def ingest_csv():
                 .reset_index(drop=True)
             ) if sales_cols else full_df.copy()
 
-            # Recipe table: one row per menu_item x ingredient
+            # Recipe table: one row per menu_item x ingredient. We rename
+            # qty_per_serving -> ingredient_qty_per_unit so that the
+            # canonical validator is happy.
             recipe_cols = [
                 c
                 for c in ["store", "menu_item", "ingredient_id", "qty_per_serving", "unit"]
                 if c in full_df.columns
             ]
-            recipe_df_raw = (
-                full_df[recipe_cols]
-                .dropna(subset=["ingredient_id"])
-                .drop_duplicates()
-                .reset_index(drop=True)
-            ) if "ingredient_id" in full_df.columns else None
+            if "ingredient_id" in full_df.columns:
+                recipe_df_raw = (
+                    full_df[recipe_cols]
+                    .dropna(subset=["ingredient_id"])
+                    .drop_duplicates()
+                    .reset_index(drop=True)
+                )
+                if "qty_per_serving" in recipe_df_raw.columns:
+                    recipe_df_raw = recipe_df_raw.rename(
+                        columns={"qty_per_serving": "ingredient_qty_per_unit"}
+                    )
+                # For the recipe table we also need a canonical menu_item_id.
+                # We reuse the sales-side convention: derive a stable ID from
+                # the menu_item name.
+                if "menu_item" in recipe_df_raw.columns and "menu_item_id" not in recipe_df_raw.columns:
+                    names = recipe_df_raw["menu_item"].astype(str).fillna("")
+                    uniq = sorted(set(names.tolist()))
+                    idx = {name: f"item_{i:04d}" for i, name in enumerate(uniq)}
+                    recipe_df_raw["menu_item_id"] = names.map(idx)
+            else:
+                recipe_df_raw = None
 
             # Ingredient dimension table
             ingredient_cols = [
@@ -635,7 +653,8 @@ def ingest_csv():
                 .reset_index(drop=True)
             ) if "ingredient_id" in full_df.columns else None
 
-            # Inventory snapshot table
+            # Inventory snapshot table. Rename `store` -> `store_id` and
+            # `qty_on_hand` -> `on_hand_qty` to match canonical schema.
             inventory_cols = [
                 c
                 for c in [
@@ -647,12 +666,22 @@ def ingest_csv():
                 ]
                 if c in full_df.columns
             ]
-            inventory_df_raw = (
-                full_df[inventory_cols]
-                .dropna(subset=["ingredient_id", "snapshot_date"])
-                .drop_duplicates()
-                .reset_index(drop=True)
-            ) if {"ingredient_id", "snapshot_date"}.issubset(full_df.columns) else None
+            if {"ingredient_id", "snapshot_date"}.issubset(full_df.columns):
+                inventory_df_raw = (
+                    full_df[inventory_cols]
+                    .dropna(subset=["ingredient_id", "snapshot_date"])
+                    .drop_duplicates()
+                    .reset_index(drop=True)
+                )
+                rename_map = {}
+                if "store" in inventory_df_raw.columns:
+                    rename_map["store"] = "store_id"
+                if "qty_on_hand" in inventory_df_raw.columns:
+                    rename_map["qty_on_hand"] = "on_hand_qty"
+                if rename_map:
+                    inventory_df_raw = inventory_df_raw.rename(columns=rename_map)
+            else:
+                inventory_df_raw = None
 
             # Provide a default mapping_override for common column names if user didn't supply one.
             if mapping_override is None:

@@ -1,0 +1,281 @@
+date,store,menu_item,qty_sold,ingredient_id,qty_per_serving,unit,ingredient_name,ingredient_category,cost_per_unit,qty_on_hand,snapshot_date
+2026-01-01,Main Street,Basic Pie,19,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-01,Main Street,Basic Pie,19,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-01,Main Street,Apple Special,13,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-01,Main Street,Apple Special,13,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-01,Main Street,Latte,23,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-01,Main Street,Latte,23,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-01,Main Street,Veggie Pizza,15,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-01,Main Street,Veggie Pizza,15,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-01,Main Street,Veggie Pizza,15,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-01,Main Street,Veggie Pizza,15,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-01,Downtown,Basic Pie,23,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-01,Downtown,Basic Pie,23,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-01,Downtown,Apple Special,15,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-01,Downtown,Apple Special,15,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-01,Downtown,Latte,24,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-01,Downtown,Latte,24,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-01,Downtown,Veggie Pizza,15,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-01,Downtown,Veggie Pizza,15,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-01,Downtown,Veggie Pizza,15,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-01,Downtown,Veggie Pizza,15,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-02,Main Street,Basic Pie,23,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-02,Main Street,Basic Pie,23,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-02,Main Street,Apple Special,14,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-02,Main Street,Apple Special,14,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-02,Main Street,Latte,28,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-02,Main Street,Latte,28,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-02,Main Street,Veggie Pizza,16,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-02,Main Street,Veggie Pizza,16,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-02,Main Street,Veggie Pizza,16,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-02,Main Street,Veggie Pizza,16,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-02,Downtown,Basic Pie,22,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-02,Downtown,Basic Pie,22,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-02,Downtown,Apple Special,16,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-02,Downtown,Apple Special,16,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-02,Downtown,Latte,30,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-02,Downtown,Latte,30,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-02,Downtown,Veggie Pizza,19,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-02,Downtown,Veggie Pizza,19,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-02,Downtown,Veggie Pizza,19,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-02,Downtown,Veggie Pizza,19,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-03,Main Street,Basic Pie,24,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-03,Main Street,Basic Pie,24,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-03,Main Street,Apple Special,19,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-03,Main Street,Apple Special,19,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-03,Main Street,Latte,30,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-03,Main Street,Latte,30,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-03,Main Street,Veggie Pizza,24,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-03,Main Street,Veggie Pizza,24,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-03,Main Street,Veggie Pizza,24,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-03,Main Street,Veggie Pizza,24,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-03,Downtown,Basic Pie,32,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-03,Downtown,Basic Pie,32,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-03,Downtown,Apple Special,21,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-03,Downtown,Apple Special,21,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-03,Downtown,Latte,40,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-03,Downtown,Latte,40,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-03,Downtown,Veggie Pizza,23,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-03,Downtown,Veggie Pizza,23,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-03,Downtown,Veggie Pizza,23,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-03,Downtown,Veggie Pizza,23,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-04,Main Street,Basic Pie,26,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-04,Main Street,Basic Pie,26,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-04,Main Street,Apple Special,12,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-04,Main Street,Apple Special,12,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-04,Main Street,Latte,31,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-04,Main Street,Latte,31,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-04,Main Street,Veggie Pizza,16,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-04,Main Street,Veggie Pizza,16,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-04,Main Street,Veggie Pizza,16,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-04,Main Street,Veggie Pizza,16,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-04,Downtown,Basic Pie,24,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-04,Downtown,Basic Pie,24,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-04,Downtown,Apple Special,14,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-04,Downtown,Apple Special,14,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-04,Downtown,Latte,32,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-04,Downtown,Latte,32,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-04,Downtown,Veggie Pizza,20,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-04,Downtown,Veggie Pizza,20,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-04,Downtown,Veggie Pizza,20,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-04,Downtown,Veggie Pizza,20,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-05,Main Street,Basic Pie,18,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-05,Main Street,Basic Pie,18,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-05,Main Street,Apple Special,8,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-05,Main Street,Apple Special,8,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-05,Main Street,Latte,21,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-05,Main Street,Latte,21,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-05,Main Street,Veggie Pizza,12,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-05,Main Street,Veggie Pizza,12,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-05,Main Street,Veggie Pizza,12,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-05,Main Street,Veggie Pizza,12,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-05,Downtown,Basic Pie,20,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-05,Downtown,Basic Pie,20,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-05,Downtown,Apple Special,13,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-05,Downtown,Apple Special,13,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-05,Downtown,Latte,22,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-05,Downtown,Latte,22,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-05,Downtown,Veggie Pizza,16,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-05,Downtown,Veggie Pizza,16,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-05,Downtown,Veggie Pizza,16,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-05,Downtown,Veggie Pizza,16,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-06,Main Street,Basic Pie,13,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-06,Main Street,Basic Pie,13,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-06,Main Street,Apple Special,8,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-06,Main Street,Apple Special,8,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-06,Main Street,Latte,18,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-06,Main Street,Latte,18,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-06,Main Street,Veggie Pizza,8,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-06,Main Street,Veggie Pizza,8,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-06,Main Street,Veggie Pizza,8,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-06,Main Street,Veggie Pizza,8,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-06,Downtown,Basic Pie,14,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-06,Downtown,Basic Pie,14,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-06,Downtown,Apple Special,10,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-06,Downtown,Apple Special,10,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-06,Downtown,Latte,20,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-06,Downtown,Latte,20,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-06,Downtown,Veggie Pizza,13,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-06,Downtown,Veggie Pizza,13,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-06,Downtown,Veggie Pizza,13,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-06,Downtown,Veggie Pizza,13,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-07,Main Street,Basic Pie,17,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-07,Main Street,Basic Pie,17,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-07,Main Street,Apple Special,7,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-07,Main Street,Apple Special,7,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-07,Main Street,Latte,18,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-07,Main Street,Latte,18,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-07,Main Street,Veggie Pizza,11,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-07,Main Street,Veggie Pizza,11,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-07,Main Street,Veggie Pizza,11,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-07,Main Street,Veggie Pizza,11,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-07,Downtown,Basic Pie,16,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-07,Downtown,Basic Pie,16,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-07,Downtown,Apple Special,12,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-07,Downtown,Apple Special,12,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-07,Downtown,Latte,21,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-07,Downtown,Latte,21,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-07,Downtown,Veggie Pizza,10,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-07,Downtown,Veggie Pizza,10,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-07,Downtown,Veggie Pizza,10,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-07,Downtown,Veggie Pizza,10,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-08,Main Street,Basic Pie,16,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-08,Main Street,Basic Pie,16,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-08,Main Street,Apple Special,13,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-08,Main Street,Apple Special,13,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-08,Main Street,Latte,20,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-08,Main Street,Latte,20,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-08,Main Street,Veggie Pizza,15,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-08,Main Street,Veggie Pizza,15,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-08,Main Street,Veggie Pizza,15,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-08,Main Street,Veggie Pizza,15,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-08,Downtown,Basic Pie,18,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-08,Downtown,Basic Pie,18,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-08,Downtown,Apple Special,13,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-08,Downtown,Apple Special,13,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-08,Downtown,Latte,26,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-08,Downtown,Latte,26,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-08,Downtown,Veggie Pizza,14,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-08,Downtown,Veggie Pizza,14,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-08,Downtown,Veggie Pizza,14,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-08,Downtown,Veggie Pizza,14,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-09,Main Street,Basic Pie,19,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-09,Main Street,Basic Pie,19,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-09,Main Street,Apple Special,11,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-09,Main Street,Apple Special,11,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-09,Main Street,Latte,25,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-09,Main Street,Latte,25,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-09,Main Street,Veggie Pizza,16,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-09,Main Street,Veggie Pizza,16,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-09,Main Street,Veggie Pizza,16,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-09,Main Street,Veggie Pizza,16,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-09,Downtown,Basic Pie,22,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-09,Downtown,Basic Pie,22,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-09,Downtown,Apple Special,16,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-09,Downtown,Apple Special,16,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-09,Downtown,Latte,31,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-09,Downtown,Latte,31,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-09,Downtown,Veggie Pizza,21,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-09,Downtown,Veggie Pizza,21,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-09,Downtown,Veggie Pizza,21,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-09,Downtown,Veggie Pizza,21,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-10,Main Street,Basic Pie,27,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-10,Main Street,Basic Pie,27,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-10,Main Street,Apple Special,14,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-10,Main Street,Apple Special,14,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-10,Main Street,Latte,35,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-10,Main Street,Latte,35,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-10,Main Street,Veggie Pizza,20,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-10,Main Street,Veggie Pizza,20,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-10,Main Street,Veggie Pizza,20,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-10,Main Street,Veggie Pizza,20,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-10,Downtown,Basic Pie,30,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-10,Downtown,Basic Pie,30,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-10,Downtown,Apple Special,19,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-10,Downtown,Apple Special,19,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-10,Downtown,Latte,34,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-10,Downtown,Latte,34,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-10,Downtown,Veggie Pizza,25,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-10,Downtown,Veggie Pizza,25,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-10,Downtown,Veggie Pizza,25,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-10,Downtown,Veggie Pizza,25,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-11,Main Street,Basic Pie,24,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-11,Main Street,Basic Pie,24,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-11,Main Street,Apple Special,12,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-11,Main Street,Apple Special,12,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-11,Main Street,Latte,30,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-11,Main Street,Latte,30,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-11,Main Street,Veggie Pizza,16,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-11,Main Street,Veggie Pizza,16,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-11,Main Street,Veggie Pizza,16,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-11,Main Street,Veggie Pizza,16,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-11,Downtown,Basic Pie,26,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-11,Downtown,Basic Pie,26,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-11,Downtown,Apple Special,16,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-11,Downtown,Apple Special,16,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-11,Downtown,Latte,31,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-11,Downtown,Latte,31,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-11,Downtown,Veggie Pizza,19,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-11,Downtown,Veggie Pizza,19,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-11,Downtown,Veggie Pizza,19,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-11,Downtown,Veggie Pizza,19,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-12,Main Street,Basic Pie,14,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-12,Main Street,Basic Pie,14,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-12,Main Street,Apple Special,11,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-12,Main Street,Apple Special,11,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-12,Main Street,Latte,21,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-12,Main Street,Latte,21,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-12,Main Street,Veggie Pizza,11,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-12,Main Street,Veggie Pizza,11,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-12,Main Street,Veggie Pizza,11,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-12,Main Street,Veggie Pizza,11,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-12,Downtown,Basic Pie,21,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-12,Downtown,Basic Pie,21,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-12,Downtown,Apple Special,10,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-12,Downtown,Apple Special,10,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-12,Downtown,Latte,24,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-12,Downtown,Latte,24,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-12,Downtown,Veggie Pizza,16,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-12,Downtown,Veggie Pizza,16,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-12,Downtown,Veggie Pizza,16,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-12,Downtown,Veggie Pizza,16,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-13,Main Street,Basic Pie,13,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-13,Main Street,Basic Pie,13,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-13,Main Street,Apple Special,7,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-13,Main Street,Apple Special,7,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-13,Main Street,Latte,18,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-13,Main Street,Latte,18,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-13,Main Street,Veggie Pizza,11,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-13,Main Street,Veggie Pizza,11,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-13,Main Street,Veggie Pizza,11,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-13,Main Street,Veggie Pizza,11,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-13,Downtown,Basic Pie,14,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-13,Downtown,Basic Pie,14,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-13,Downtown,Apple Special,10,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-13,Downtown,Apple Special,10,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-13,Downtown,Latte,21,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-13,Downtown,Latte,21,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-13,Downtown,Veggie Pizza,10,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-13,Downtown,Veggie Pizza,10,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-13,Downtown,Veggie Pizza,10,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-13,Downtown,Veggie Pizza,10,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
+2026-01-14,Main Street,Basic Pie,13,ING001,0.22,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-14,Main Street,Basic Pie,13,ING003,0.08,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-14,Main Street,Apple Special,9,ING001,0.2,kg,Pie Dough,bakery,3.2,20.0,2026-01-15
+2026-01-14,Main Street,Apple Special,9,ING002,0.18,kg,Apple Filling,produce,4.1,11.0,2026-01-15
+2026-01-14,Main Street,Latte,20,ING006,0.3,liter,Milk,dairy,1.5,26.0,2026-01-15
+2026-01-14,Main Street,Latte,20,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.5,2026-01-15
+2026-01-14,Main Street,Veggie Pizza,11,ING004,0.25,kg,Pizza Dough,bakery,2.9,18.0,2026-01-15
+2026-01-14,Main Street,Veggie Pizza,11,ING005,0.12,kg,Tomato Sauce,pantry,2.4,10.0,2026-01-15
+2026-01-14,Main Street,Veggie Pizza,11,ING003,0.1,kg,Cheese,dairy,6.8,14.0,2026-01-15
+2026-01-14,Main Street,Veggie Pizza,11,ING008,0.15,kg,Vegetable Mix,produce,5.25,9.0,2026-01-15
+2026-01-14,Downtown,Basic Pie,15,ING001,0.22,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-14,Downtown,Basic Pie,15,ING003,0.08,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-14,Downtown,Apple Special,9,ING001,0.2,kg,Pie Dough,bakery,3.2,17.0,2026-01-15
+2026-01-14,Downtown,Apple Special,9,ING002,0.18,kg,Apple Filling,produce,4.1,9.0,2026-01-15
+2026-01-14,Downtown,Latte,20,ING006,0.3,liter,Milk,dairy,1.5,22.0,2026-01-15
+2026-01-14,Downtown,Latte,20,ING007,0.02,kg,Coffee Beans,beverage,14.0,4.0,2026-01-15
+2026-01-14,Downtown,Veggie Pizza,14,ING004,0.25,kg,Pizza Dough,bakery,2.9,15.0,2026-01-15
+2026-01-14,Downtown,Veggie Pizza,14,ING005,0.12,kg,Tomato Sauce,pantry,2.4,8.5,2026-01-15
+2026-01-14,Downtown,Veggie Pizza,14,ING003,0.1,kg,Cheese,dairy,6.8,12.0,2026-01-15
+2026-01-14,Downtown,Veggie Pizza,14,ING008,0.15,kg,Vegetable Mix,produce,5.25,7.5,2026-01-15
