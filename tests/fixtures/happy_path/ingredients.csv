@@ -1,0 +1,8 @@
+ingredient_id,ingredient_name,lead_time_days_avg,min_order_qty,lot_size,case_multiple,shelf_life_days,service_level_target
+dough,Dough,2,20,20,10,3,0.95
+cheese,Cheese,2,10,10,5,7,0.95
+sauce,Sauce,3,10,10,5,10,0.95
+lettuce,Lettuce,1,10,10,5,4,0.95
+dressing,Dressing,3,5,5,5,14,0.90
+broth,Broth,2,10,10,5,7,0.95
+cream,Cream,1,10,10,5,5,0.95

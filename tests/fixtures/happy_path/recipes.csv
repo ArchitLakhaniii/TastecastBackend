@@ -1,0 +1,8 @@
+menu_item_id,ingredient_id,ingredient_qty_per_unit
+pizza,dough,1.0
+pizza,cheese,0.5
+pizza,sauce,0.2
+salad,lettuce,0.3
+salad,dressing,0.1
+soup,broth,0.4
+soup,cream,0.1

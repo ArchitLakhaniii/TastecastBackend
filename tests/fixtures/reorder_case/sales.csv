@@ -1,0 +1,8 @@
+date,store_id,menu_item_id,qty_sold,price,promo_flag
+2026-02-01,store_1,pizza,25,12.99,0
+2026-02-02,store_1,pizza,24,12.99,0
+2026-02-03,store_1,pizza,28,12.99,0
+2026-02-04,store_1,pizza,26,12.99,0
+2026-02-05,store_1,pizza,29,12.99,0
+2026-02-06,store_1,pizza,30,12.99,0
+2026-02-07,store_1,pizza,31,12.99,0

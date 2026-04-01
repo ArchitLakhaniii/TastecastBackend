@@ -1,0 +1,10 @@
+forecast:
+  horizon_days: 7
+  default_model: fallback
+inventory:
+  default_service_level: 0.95
+  use_safety_stock: true
+specials:
+  enabled: true
+  allowed_weekdays: [4, 5, 6]
+  max_special_units_per_day: 10

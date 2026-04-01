@@ -1,0 +1,8 @@
+store_id,ingredient_id,snapshot_date,on_hand_qty,on_order_qty,backorder_qty,usable_qty
+store_1,dough,2026-03-01,40,0,0,40
+store_1,cheese,2026-03-01,30,0,0,30
+store_1,sauce,2026-03-01,25,0,0,25
+store_1,lettuce,2026-03-01,20,0,0,20
+store_1,dressing,2026-03-01,20,0,0,20
+store_1,broth,2026-03-01,20,0,0,20
+store_1,cream,2026-03-01,15,0,0,15
