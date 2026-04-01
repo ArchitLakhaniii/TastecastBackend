@@ -48,29 +48,29 @@ except ImportError as e:
         # Create comprehensive fallback function that actually creates new data
         def run_full_pipeline(data_csv=None, days_ahead=30):
             """Enhanced fallback pipeline function that creates realistic data"""
-            log_pipeline_event("FALLBACK: Starting fallback pipeline execution")
+            # log_pipeline_event("FALLBACK: Starting fallback pipeline execution")
             try:
                 import pandas as pd
                 import os
                 from datetime import datetime, timedelta
                 
-                log_pipeline_event("FALLBACK: Imports successful, processing data")
+                # log_pipeline_event("FALLBACK: Imports successful, processing data")
                 
                 # Read the uploaded CSV to get recent data
                 if data_csv and os.path.exists(data_csv):
-                    log_pipeline_event(f"FALLBACK: Reading CSV from {data_csv}")
+                    # log_pipeline_event(f"FALLBACK: Reading CSV from {data_csv}")
                     df = pd.read_csv(data_csv, parse_dates=['date'])
                     recent_avg = df['qty_sold'].tail(14).mean()  # Last 2 weeks average
                     last_date = pd.to_datetime(df['date'].max())
-                    log_pipeline_event(f"FALLBACK: Analyzed {len(df)} rows, recent avg: {recent_avg:.1f}, last date: {last_date}")
+                    # log_pipeline_event(f"FALLBACK: Analyzed {len(df)} rows, recent avg: {recent_avg:.1f}, last date: {last_date}")
                 else:
-                    log_pipeline_event("FALLBACK: No CSV found, using default values")
+                    # log_pipeline_event("FALLBACK: No CSV found, using default values")
                     recent_avg = 8.5
                     last_date = datetime.now()
                 
                 # Create artifacts directory
                 os.makedirs("artifacts", exist_ok=True)
-                log_pipeline_event("FALLBACK: Created artifacts directory")
+                # log_pipeline_event("FALLBACK: Created artifacts directory")
                 
                 # Generate realistic advisories based on the data
                 start_date = last_date + timedelta(days=1)
@@ -106,7 +106,7 @@ except ImportError as e:
                 advisories_df = pd.DataFrame(advisories)
                 advisories_path = 'artifacts/advisories.csv'
                 advisories_df.to_csv(advisories_path, index=False)
-                log_pipeline_event(f"FALLBACK: Saved {len(advisories)} advisories to {advisories_path}")
+                # log_pipeline_event(f"FALLBACK: Saved {len(advisories)} advisories to {advisories_path}")
                 
                 # Create basic daily plan
                 dates = [start_date + timedelta(days=i) for i in range(days_ahead)]
@@ -119,9 +119,9 @@ except ImportError as e:
                 
                 daily_plan_path = 'artifacts/daily_plan.csv'
                 daily_plan.to_csv(daily_plan_path, index=False)
-                log_pipeline_event(f"FALLBACK: Saved daily plan to {daily_plan_path}")
+                # log_pipeline_event(f"FALLBACK: Saved daily plan to {daily_plan_path}")
                 
-                log_pipeline_event(f"FALLBACK: Successfully completed pipeline with {len(advisories)} advisories")
+                # log_pipeline_event(f"FALLBACK: Successfully completed pipeline with {len(advisories)} advisories")
                 return {
                     "status": "fallback_success", 
                     "plan": daily_plan_path, 
@@ -130,7 +130,7 @@ except ImportError as e:
                 }
                 
             except Exception as e:
-                log_pipeline_event(f"FALLBACK ERROR: Pipeline failed: {e}")
+                # log_pipeline_event(f"FALLBACK ERROR: Pipeline failed: {e}")
                 return {"status": "error", "message": f"Fallback pipeline failed: {str(e)}"}
     
     # Set fallback for other functions
@@ -481,7 +481,7 @@ def clear_data():
         cleared_items.append('pipeline logs')
         
         # Log the clear operation
-        log_pipeline_event("DATA CLEARED: All ML artifacts and uploads removed")
+    # log_pipeline_event("DATA CLEARED: All ML artifacts and uploads removed")
         
         response = {
             'message': 'Data cleared successfully',
@@ -505,8 +505,47 @@ def clear_data():
 
 @app.route('/api/ingest', methods=['POST'])
 def ingest_csv():
-    """Generalized ingestion endpoint (Mode C) with versioned artifacts.\n+\n+    Multipart form-data:\n+    - file: sales CSV (required)\n+    - recipe: recipe_fact CSV (optional)\n+    - ingredients: ingredient_dim CSV (optional)\n+    - inventory: inventory_snapshot CSV (optional)\n+    - mapping: JSON dict canonical->source (optional)\n+    - horizon_days: int (optional)\n+    """
-    log_pipeline_event("Ingest endpoint called (/api/ingest)")
+    """Generalized ingestion endpoint (Mode C) with versioned artifacts.
+
+        This is the primary entry point for testing the forecasting and planning
+        pipeline from the frontend using CSV uploads.
+
+        Multipart form-data (two usage patterns):
+
+        1) Simple/legacy: **sales-only CSV**
+           - ``file`` (required): sales CSV with columns that can be mapped to
+             canonical fields, such as::
+
+                 date,store,menu_item,qty_sold
+
+           - Optional extra files:
+             - ``recipe``: recipe_fact CSV
+             - ``ingredients``: ingredient_dim CSV
+             - ``inventory``: inventory_snapshot CSV
+
+        2) **All-in-one CSV** (single file with *all* tables denormalized)
+           - ``file`` (required): one wide CSV where each row may contain:
+
+                 date,store,menu_item,qty_sold,
+                 ingredient_id,ingredient_name,qty_per_serving,unit,
+                 ingredient_category,cost_per_unit,
+                 qty_on_hand,snapshot_date
+
+           - In this mode you do NOT need to send separate ``recipe``,
+             ``ingredients``, or ``inventory`` files. The backend will split the
+             single CSV into four logical tables (sales, recipe, ingredients,
+             inventory) before running the pipeline.
+
+        Optional form fields (both modes):
+        - ``mapping``: JSON dict canonical->source (column rename override)
+        - ``horizon_days``: int (optional, default 30)
+
+        On success this endpoint writes versioned artifacts (daily plan,
+        ingredient plan, advisories, forecast, summaries) that are then served
+        by the GET endpoints like /api/forecast, /api/daily-plan, and
+        /api/advisories.
+        """
+
     try:
         if "file" not in request.files:
             return jsonify({"error": "Missing required sales file field 'file'"}), 400
@@ -521,7 +560,7 @@ def ingest_csv():
         sales_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         sales_file.save(sales_path)
 
-        # Optional additional tables
+        # Optional additional tables (only used when not in all-in-one mode)
         def _opt_csv(name: str):
             f = request.files.get(name)
             if not f or f.filename == "":
@@ -532,10 +571,6 @@ def ingest_csv():
             path = os.path.join(app.config["UPLOAD_FOLDER"], f"{name}__{fn}")
             f.save(path)
             return path, fn
-
-        recipe_path, _ = _opt_csv("recipe")
-        ingredients_path, _ = _opt_csv("ingredients")
-        inventory_path, _ = _opt_csv("inventory")
 
         mapping_override = None
         mapping_raw = request.form.get("mapping")
@@ -551,11 +586,93 @@ def ingest_csv():
         except Exception:
             horizon_days = 30
 
-        # Load raw CSVs
-        sales_df_raw = pd.read_csv(sales_path)
-        recipe_df_raw = pd.read_csv(recipe_path) if recipe_path else None
-        ingredient_df_raw = pd.read_csv(ingredients_path) if ingredients_path else None
-        inventory_df_raw = pd.read_csv(inventory_path) if inventory_path else None
+        # Load primary CSV
+        full_df = pd.read_csv(sales_path)
+
+        # Decide if we're in all-in-one mode by looking for key columns
+        all_in_one_cols = {"ingredient_id", "qty_per_serving", "qty_on_hand", "snapshot_date"}
+        has_all_in_one = all_in_one_cols.issubset(set(full_df.columns))
+
+        if has_all_in_one:
+            # --- ALL-IN-ONE MODE: split into four logical tables ---
+            # Sales table
+            sales_cols = [c for c in ["date", "store", "menu_item", "qty_sold"] if c in full_df.columns]
+            sales_df_raw = (
+                full_df[sales_cols]
+                .drop_duplicates()
+                .reset_index(drop=True)
+            ) if sales_cols else full_df.copy()
+
+            # Recipe table: one row per menu_item x ingredient
+            recipe_cols = [
+                c
+                for c in ["store", "menu_item", "ingredient_id", "qty_per_serving", "unit"]
+                if c in full_df.columns
+            ]
+            recipe_df_raw = (
+                full_df[recipe_cols]
+                .dropna(subset=["ingredient_id"])
+                .drop_duplicates()
+                .reset_index(drop=True)
+            ) if "ingredient_id" in full_df.columns else None
+
+            # Ingredient dimension table
+            ingredient_cols = [
+                c
+                for c in [
+                    "ingredient_id",
+                    "ingredient_name",
+                    "unit",
+                    "ingredient_category",
+                    "cost_per_unit",
+                ]
+                if c in full_df.columns
+            ]
+            ingredient_df_raw = (
+                full_df[ingredient_cols]
+                .dropna(subset=["ingredient_id"])
+                .drop_duplicates()
+                .reset_index(drop=True)
+            ) if "ingredient_id" in full_df.columns else None
+
+            # Inventory snapshot table
+            inventory_cols = [
+                c
+                for c in [
+                    "store",
+                    "ingredient_id",
+                    "qty_on_hand",
+                    "unit",
+                    "snapshot_date",
+                ]
+                if c in full_df.columns
+            ]
+            inventory_df_raw = (
+                full_df[inventory_cols]
+                .dropna(subset=["ingredient_id", "snapshot_date"])
+                .drop_duplicates()
+                .reset_index(drop=True)
+            ) if {"ingredient_id", "snapshot_date"}.issubset(full_df.columns) else None
+
+            # Provide a default mapping_override for common column names if user didn't supply one.
+            if mapping_override is None:
+                mapping_override = {
+                    "date": "date",
+                    "store_id": "store",
+                    "menu_item_name": "menu_item",
+                    "qty_sold": "qty_sold",
+                }
+
+        else:
+            # --- STANDARD MODE: treat 'file' as sales-only CSV and look for extra uploads ---
+            recipe_path, _ = _opt_csv("recipe")
+            ingredients_path, _ = _opt_csv("ingredients")
+            inventory_path, _ = _opt_csv("inventory")
+
+            sales_df_raw = full_df
+            recipe_df_raw = pd.read_csv(recipe_path) if recipe_path else None
+            ingredient_df_raw = pd.read_csv(ingredients_path) if ingredients_path else None
+            inventory_df_raw = pd.read_csv(inventory_path) if inventory_path else None
 
         ingested = ingest_mode_c(
             sales_df_raw,

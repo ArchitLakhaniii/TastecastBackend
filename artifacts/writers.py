@@ -8,6 +8,21 @@ from typing import Any, Dict, Optional
 import pandas as pd
 
 
+def _round_numeric(df: pd.DataFrame, ndigits: int = 2) -> pd.DataFrame:
+    """Return a copy of df with all numeric columns rounded to given decimals.
+
+    This is applied right before persisting artifacts so that API responses and
+    CSVs expose stable, operator-friendly numbers (e.g., 2 decimal places).
+    """
+    if df is None:
+        return df
+    out = df.copy()
+    num_cols = out.select_dtypes(include=["number"]).columns
+    if len(num_cols) > 0:
+        out[num_cols] = out[num_cols].round(ndigits)
+    return out
+
+#hello
 def run_dir(run_id: str, base_dir: str = "artifacts/runs") -> str:
     return os.path.join(base_dir, run_id)
 
@@ -62,6 +77,12 @@ def write_run_artifacts(
     mirror_current: bool = True,
 ) -> WrittenArtifacts:
     base = ensure_run_dir(run_id, base_dir=base_dir)
+
+    # Normalize numeric precision for persisted artifacts
+    daily_plan_df = _round_numeric(daily_plan_df)
+    forecast_df = _round_numeric(forecast_df)
+    advisories_df = _round_numeric(advisories_df)
+    ingredient_plan_df = _round_numeric(ingredient_plan_df) if ingredient_plan_df is not None else None
 
     daily_plan_csv = write_csv(daily_plan_df, os.path.join(base, "daily_plan.csv"))
     forecast_csv = write_csv(forecast_df, os.path.join(base, "forecast.csv"))
